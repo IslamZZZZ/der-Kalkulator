@@ -25,4 +25,5 @@ class Matrix{
         bool isSquare();
         void cutRow(int);
         void cutCol(int);
+        double minor(int, int);
 };

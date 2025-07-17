@@ -38,11 +38,11 @@ size_t Matrix::cols() {
 }
 
 double Matrix::get(int i, int j) {
-    return data[i][j];
+    return data[i-1][j-1];
 }
 
 void Matrix::change(int i, int j, double val) {
-    data[i][j] = val;
+    data[i-1][j-1] = val;
 }
 
 void Matrix::resize(int i, int j, double val) {
@@ -63,8 +63,8 @@ void Matrix::print() {
 }
 
 void Matrix::add(Matrix mat) {
-    for(int i = 0; i < rows(); ++i) {
-        for(int j = 0; j < cols(); ++j) {
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
             double sum = get(i, j) + mat.get(i, j);
             change(i, j, sum);
         }
@@ -72,8 +72,8 @@ void Matrix::add(Matrix mat) {
 }
 
 void Matrix::subtract(Matrix mat) {
-    for(int i = 0; i < rows(); ++i) {
-        for(int j = 0; j < cols(); ++j) {
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
             mat.change(i, j, mat.get(i, j) * (-1) );
         }
     }
@@ -81,12 +81,16 @@ void Matrix::subtract(Matrix mat) {
 }
 
 void Matrix::multiply(Matrix mat) {
+    if(cols() != mat.rows()) {
+        cerr << "IT'S A MISTAKE" << endl;
+        return;
+    }
     Matrix result;
     result.resize(rows(), mat.cols(), 0);
-    for(int i = 0; i < rows(); ++i) {
-        for(int j = 0; j < mat.cols(); ++j) {
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= mat.cols(); ++j) {
             double sum = 0;
-            for(int k = 0; k < cols(); ++k) {
+            for(int k = 1; k <= cols(); ++k) {
                 sum += get(i, k) * mat.get(k, j);
             }
             result.change(i, j, sum);
@@ -96,8 +100,8 @@ void Matrix::multiply(Matrix mat) {
 }
 
 void Matrix::multiply(double val) {
-    for(int i = 0; i < rows(); ++i) {
-        for(int j = 0; j < cols(); ++j) {
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
             change(i, j, get(i, j) * val);
         }
     }
@@ -110,8 +114,8 @@ bool Matrix::isSquare() {
 void Matrix::transpose() {
     Matrix neu;
     neu.resize(cols(), rows(), 0);
-    for(int i = 0; i < rows(); ++i) {
-        for(int j = 0; j < cols(); ++j) {
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
             neu.change(j, i, get(i, j));
         }
     }
@@ -141,8 +145,21 @@ double Matrix::determinant() {
         cut.data = data;
         cut.cutCol(i);
         cut.cutRow(1);
-        int sign = (i % 2 == 0) ? 1 : -1;
+        int sign = (i % 2 == 1) ? 1 : -1;
         sum += get(1, i) * cut.determinant() * sign;
     }
     return sum;
+}
+
+double Matrix::minor(int i, int j) {
+    if(!isSquare()) {
+        cerr << "IT'S A MISTAKE" << endl;
+        return -1;
+    }
+    Matrix neu;
+    neu.data = data;
+    neu.cutRow(i);
+    neu.cutCol(i);
+    int sign = (i + j) % 2 == 0 ? 1 : -1;
+    return sign * neu.determinant();
 }
