@@ -1,0 +1,4 @@
+/home/keusa/calc/der-Kalkulator/build/CMakeFiles/mylib.dir
+/home/keusa/calc/der-Kalkulator/build/CMakeFiles/app.dir
+/home/keusa/calc/der-Kalkulator/build/CMakeFiles/edit_cache.dir
+/home/keusa/calc/der-Kalkulator/build/CMakeFiles/rebuild_cache.dir
