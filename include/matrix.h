@@ -16,6 +16,7 @@ class Matrix{
         void change(int, int, double);
         void print();
         void add(Matrix);
+        void add(double);
         void subtract(Matrix);
         void multiply(Matrix);
         void multiply(double);
@@ -26,4 +27,9 @@ class Matrix{
         void cutRow(int);
         void cutCol(int);
         double minor(int, int);
+        Matrix operator+(const Matrix&) const;
+        Matrix operator+(double) const;
+        Matrix operator-(const Matrix&) const;
+        Matrix operator-(double) const;
+        void negative();
 };

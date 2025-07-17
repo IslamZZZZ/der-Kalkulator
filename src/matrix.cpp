@@ -71,12 +71,16 @@ void Matrix::add(Matrix mat) {
     }
 }
 
-void Matrix::subtract(Matrix mat) {
+void Matrix::add(double val) {
     for(int i = 1; i <= rows(); ++i) {
         for(int j = 1; j <= cols(); ++j) {
-            mat.change(i, j, mat.get(i, j) * (-1) );
+            change(i, j, get(i, j) + val);
         }
     }
+}
+
+void Matrix::subtract(Matrix mat) {
+    mat.negative();
     add(mat);
 }
 
@@ -162,4 +166,40 @@ double Matrix::minor(int i, int j) {
     neu.cutCol(i);
     int sign = (i + j) % 2 == 0 ? 1 : -1;
     return sign * neu.determinant();
+}
+
+Matrix Matrix::operator+(const Matrix& mat) const {
+    Matrix result;
+    result.data = data;
+    result.add(mat);
+    return result;
+}
+
+Matrix Matrix::operator+(double val) const {
+    Matrix result;
+    result.data = data;
+    result.add(val);
+    return result;
+}
+
+Matrix Matrix::operator-(const Matrix& mat) const {
+    Matrix result;
+    result.data = data;
+    result.subtract(mat);
+    return result;
+}
+
+Matrix Matrix::operator-(double val) const {
+    Matrix result;
+    result.data = data;
+    result.add(val * (-1));
+    return result;
+}
+
+void Matrix::negative() {
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
+            change(j, i, get(i, j) * (-1) );
+        }
+    }
 }

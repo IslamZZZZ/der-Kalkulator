@@ -12,12 +12,15 @@ int main(int argc, char *argv[]) {
     string fnZ = "../matrices/Zweiste.txt";
     Matrix matE(fnE);
     Matrix matZ(fnZ);
+    Matrix mat = matE - matZ;
+    cout << "--------------------" << endl;
     matE.print();
-    cout << matE.isSquare() << endl;
+    cout << "--------------------" << endl;
     matZ.print();
-    cout << matZ.isSquare() << endl;
-    matE.multiply(matZ);
-    matE.print();
-    cout << matZ.determinant() << endl;
+    cout << "--------------------" << endl;
+    mat.print();
+    cout << "--------------------" << endl;
+    (matE - 5).print();
+    cout << "--------------------" << endl;
     return 0;
 }
