@@ -3,6 +3,10 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <limits>
+#include <ostream>
+#include <iomanip>
+
 using namespace std;
 
 #include "matrix.h"
@@ -29,20 +33,50 @@ Matrix::Matrix(string &filename) {
     }
 }
 
-size_t Matrix::rows() {
+size_t Matrix::rows() const {
     return data.size();
 }
 
-size_t Matrix::cols() {
+size_t Matrix::cols() const {
     return data.empty() ? 0 : data[0].size();
 }
 
-double Matrix::get(int i, int j) {
+double Matrix::get(int i, int j) const {
     return data[i-1][j-1];
+}
+
+void Matrix::fill(double val) {
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
+            change(i, j, val);
+        }
+    }
 }
 
 void Matrix::change(int i, int j, double val) {
     data[i-1][j-1] = val;
+}
+
+void Matrix::negative() {
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
+            change(j, i, get(i, j) * (-1) );
+        }
+    }
+}
+
+bool Matrix::isSquare() {
+    return rows() == cols();
+}
+
+void Matrix::cutRow(int i) {
+    data.erase(data.begin() + i - 1);
+}
+
+void Matrix::cutCol(int j) {
+    for(int i = 0; i < rows(); ++i) {
+        data[i].erase(data[i].begin() + j - 1);
+    }
 }
 
 void Matrix::resize(int i, int j, double val) {
@@ -53,6 +87,17 @@ void Matrix::resize(int i, int j, double val) {
     }
 }
 
+void Matrix::transpose() {
+    Matrix neu;
+    neu.resize(cols(), rows(), 0);
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
+            neu.change(j, i, get(i, j));
+        }
+    }
+    data = neu.data;
+}
+
 void Matrix::print() {
     for(const auto& row : data) {
         for(double val : row) {
@@ -60,6 +105,26 @@ void Matrix::print() {
         }
         cout << endl;
     }
+}
+
+double Matrix::max() const {
+    double val = -numeric_limits<double>::infinity();
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
+            if(val < get(i, j)) val = get(i, j);
+        }
+    }
+    return val;
+}
+
+double Matrix::min() const {
+    double val = numeric_limits<double>::infinity();
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
+            if(val > get(i, j)) val = get(i, j);
+        }
+    }
+    return val;
 }
 
 void Matrix::add(Matrix mat) {
@@ -82,6 +147,10 @@ void Matrix::add(double val) {
 void Matrix::subtract(Matrix mat) {
     mat.negative();
     add(mat);
+}
+
+void Matrix::subtract(double val) {
+    add(val * (-1));
 }
 
 void Matrix::multiply(Matrix mat) {
@@ -111,30 +180,6 @@ void Matrix::multiply(double val) {
     }
 }
 
-bool Matrix::isSquare() {
-    return rows() == cols();
-}
-
-void Matrix::transpose() {
-    Matrix neu;
-    neu.resize(cols(), rows(), 0);
-    for(int i = 1; i <= rows(); ++i) {
-        for(int j = 1; j <= cols(); ++j) {
-            neu.change(j, i, get(i, j));
-        }
-    }
-    data = neu.data;
-}
-
-void Matrix::cutRow(int i) {
-    data.erase(data.begin() + i - 1);
-}
-
-void Matrix::cutCol(int j) {
-    for(int i = 0; i < rows(); ++i) {
-        data[i].erase(data[i].begin() + j - 1);
-    }
-}
 
 double Matrix::determinant() {
     if(!isSquare()) {
@@ -192,14 +237,79 @@ Matrix Matrix::operator-(const Matrix& mat) const {
 Matrix Matrix::operator-(double val) const {
     Matrix result;
     result.data = data;
-    result.add(val * (-1));
+    result.subtract(val);
     return result;
 }
 
-void Matrix::negative() {
+Matrix Matrix::operator*(const Matrix& mat) const {
+    Matrix result;
+    result.data = data;
+    result.multiply(mat);
+    return result;
+}
+
+Matrix Matrix::operator*(double val) const {
+    Matrix result;
+    result.data = data;
+    result.multiply(val);
+    return result;
+}
+
+double& Matrix::operator()(int i, int j) {
+    return data[i-1][j-1];
+}
+
+double Matrix::operator()(int i, int j) const {
+    return data[i-1][j-1];
+}
+
+bool Matrix::operator==(const Matrix& other) const {
+    if(rows() != other.rows() || cols() != other.cols()) return false;
     for(int i = 1; i <= rows(); ++i) {
         for(int j = 1; j <= cols(); ++j) {
-            change(j, i, get(i, j) * (-1) );
+            if(get(i, j) != other.get(i, j)) return false;
+        }
+    }
+    return true;
+}
+
+ostream& operator<<(ostream& os, const Matrix& mat) {
+    for (int i = 1; i <= mat.rows(); ++i) {
+        for (int j = 1; j <= mat.cols(); ++j)
+            os << std::setw(8) << mat.get(i, j);
+        os << std::endl;
+    }
+    return os;
+}
+
+void Matrix::saveToFile(const string& filename) const {
+    ofstream out(filename);
+    for(int i = 1; i <= rows(); ++i) {
+        for(int j = 1; j <= cols(); ++j) {
+            if(j == cols()) out << get(i, j) << "\n";
+            else out << get(i,j) << " ";
+        }
+    }
+    out.close();
+}
+
+void Matrix::loadFromFile(const string& filename) {
+    ifstream fin(filename);
+    if(!fin) {
+        cerr << "Couldn't find file " << filename << endl;
+        return;
+    }
+    data.clear();
+    string line;
+    while(getline(fin, line)) {
+        istringstream iss(line);
+        double num;
+        vector<double> row;
+        while(iss >> num) {
+            row.push_back(num);
+        }
+        if(!row.empty()) {
+            data.push_back(row);
         }
     }
 }
